@@ -1,81 +1,74 @@
-import React, { useState } from 'react';
-
-interface SettingToggle {
-  id: string;
-  label: string;
-  description: string;
-  defaultValue: boolean;
-}
-
-const settingsOptions: SettingToggle[] = [
-  {
-    id: 'reminders',
-    label: 'Daily reminder notifications',
-    description: 'Get notified to check in with your cat',
-    defaultValue: true,
-  },
-  {
-    id: 'warnings',
-    label: 'Show streak warnings',
-    description: 'Alert when streak is about to reset',
-    defaultValue: true,
-  },
-  {
-    id: 'animations',
-    label: 'Hide death animations',
-    description: 'Disable animations when cat loses all lives',
-    defaultValue: false,
-  },
-  {
-    id: 'darkmode',
-    label: 'Dark mode',
-    description: 'Use dark theme (always on)',
-    defaultValue: true,
-  },
-];
+import React, { useState } from "react";
 
 const SettingsPage: React.FC = () => {
-  const [settings, setSettings] = useState<Record<string, boolean>>(
-    settingsOptions.reduce((acc, opt) => ({
-      ...acc,
-      [opt.id]: opt.defaultValue,
-    }), {})
-  );
-
-  const handleToggle = (id: string) => {
-    setSettings(prev => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-    console.log(`Setting ${id} toggled to ${!settings[id]}`);
-  };
+  const [dailyReminders, setDailyReminders] = useState(true);
+  const [streakWarnings, setStreakWarnings] = useState(true);
+  const [hideDeathAnimations, setHideDeathAnimations] = useState(false);
 
   return (
     <div className="settings-page">
       <h2 className="page-title">Settings</h2>
+      <p className="page-subtitle">
+        These are local demo settings. In a full version they could be stored on-chain or in your
+        wallet profile.
+      </p>
+
       <div className="settings-list">
-        {settingsOptions.map((option) => (
-          <div key={option.id} className="setting-item">
-            <div className="setting-info">
-              <h3 className="setting-label">{option.label}</h3>
-              <p className="setting-description">{option.description}</p>
-            </div>
-            <label className="toggle-switch">
-              <input
-                type="checkbox"
-                checked={settings[option.id]}
-                onChange={() => handleToggle(option.id)}
-                disabled={option.id === 'darkmode'} // Dark mode always on
-              />
-              <span className="toggle-slider"></span>
-            </label>
+        <div className="setting-item">
+          <div className="setting-info">
+            <p className="setting-label">Daily reminder notifications</p>
+            <p className="setting-description">
+              Get notified when it is time to check in with your cat.
+            </p>
           </div>
-        ))}
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={dailyReminders}
+              onChange={(e) => setDailyReminders(e.target.checked)}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+
+        <div className="setting-item">
+          <div className="setting-info">
+            <p className="setting-label">Show streak warnings</p>
+            <p className="setting-description">
+              Warn you when your streak is about to reset.
+            </p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={streakWarnings}
+              onChange={(e) => setStreakWarnings(e.target.checked)}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
+
+        <div className="setting-item">
+          <div className="setting-info">
+            <p className="setting-label">Hide death animations</p>
+            <p className="setting-description">
+              Keep things gentle when a cat runs out of lives.
+            </p>
+          </div>
+          <label className="toggle-switch">
+            <input
+              type="checkbox"
+              checked={hideDeathAnimations}
+              onChange={(e) => setHideDeathAnimations(e.target.checked)}
+            />
+            <span className="toggle-slider" />
+          </label>
+        </div>
       </div>
-      
+
       <div className="settings-footer">
         <p className="version-info">9Lives v1.0.0</p>
-        <p className="build-info">Built for MBC 2025</p>
+        <p className="build-info">Built for MBC 2025 hackathon demo</p>
       </div>
     </div>
   );

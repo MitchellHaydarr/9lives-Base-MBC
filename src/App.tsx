@@ -9,6 +9,9 @@ import TreasurePage from './components/TreasurePage';
 import SettingsPage from './components/SettingsPage';
 import { useCat } from './hooks/useCat';
 
+// background image for the cat frame (adjust path if needed)
+import catBg from './assets/backgrounds/background1.png';
+
 // Import contract integration functions when available
 let contractFunctions: any = null;
 try {
@@ -42,25 +45,25 @@ function App() {
       }
 
       // Request account access
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      
+      const accounts = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
       // Create provider and signer
       const newProvider = new ethers.BrowserProvider(window.ethereum);
       const newSigner = await newProvider.getSigner();
-      
+
       setSigner(newSigner);
       setAccount(accounts[0]);
 
       // Try to load contract if ABI is available
       try {
         if (contractFunctions) {
-          // Contract will be set up when deployed
           console.log('Contract functions available');
         }
       } catch (err) {
         console.log('Contract not yet deployed, running in demo mode');
       }
-
     } catch (err: any) {
       console.error('Failed to connect wallet:', err);
       setError(err.message || 'Failed to connect wallet');
@@ -69,10 +72,22 @@ function App() {
     }
   }, []);
 
+  // Disconnect wallet function
+  const disconnectWallet = useCallback(() => {
+    setAccount('');
+    setSigner(null);
+    setError('');
+    setTxStatus('');
+    // Clear any cached cat data for the disconnected account
+    if (account) {
+      localStorage.removeItem(`cat_${account}`);
+    }
+  }, [account]);
+
   // Create cat function
   const handleCreateCat = async () => {
     if (!account) return;
-    
+
     setLoading(true);
     setTxStatus('Creating your cat...');
     setError('');
@@ -87,11 +102,11 @@ function App() {
           streak: 0,
           stage: 0,
           lastCheckIn: Math.floor(Date.now() / 1000).toString(),
-          exists: true
+          exists: true,
         };
         localStorage.setItem(`cat_${account}`, JSON.stringify(mockCat));
       }
-      
+
       setTxStatus('Cat created successfully!');
       await refreshCat();
     } catch (err: any) {
@@ -106,7 +121,7 @@ function App() {
   // Check in function
   const handleCheckIn = async () => {
     if (!account || !hasCat) return;
-    
+
     setLoading(true);
     setTxStatus('Checking in...');
     setError('');
@@ -114,7 +129,9 @@ function App() {
     try {
       if (contractFunctions && signer) {
         const result = await contractFunctions.checkIn();
-        setTxStatus(`Checked in! Streak: ${result.streak}, Stage: ${result.stage}`);
+        setTxStatus(
+          `Checked in! Streak: ${result.streak}, Stage: ${result.stage}`,
+        );
       } else {
         // Mock mode for development
         const mockData = localStorage.getItem(`cat_${account}`);
@@ -122,18 +139,18 @@ function App() {
           const cat = JSON.parse(mockData);
           cat.streak += 1;
           cat.lastCheckIn = Math.floor(Date.now() / 1000).toString();
-          
+
           // Update stage based on streak
           if (cat.streak >= 12) cat.stage = 3;
           else if (cat.streak >= 7) cat.stage = 2;
           else if (cat.streak >= 3) cat.stage = 1;
           else cat.stage = 0;
-          
+
           localStorage.setItem(`cat_${account}`, JSON.stringify(cat));
           setTxStatus(`Checked in! Streak: ${cat.streak}`);
         }
       }
-      
+
       await refreshCat();
     } catch (err: any) {
       console.error('Failed to check in:', err);
@@ -147,7 +164,7 @@ function App() {
   // Restore life function
   const handleRestoreLife = async () => {
     if (!account || !hasCat || !cat) return;
-    
+
     setLoading(true);
     setTxStatus('Restoring life with USDC...');
     setError('');
@@ -166,7 +183,7 @@ function App() {
           }
         }
       }
-      
+
       setTxStatus('Life restored!');
       await refreshCat();
     } catch (err: any) {
@@ -181,7 +198,7 @@ function App() {
   // Lose life function for testing
   const handleLoseLife = async () => {
     if (!account || !hasCat || !cat || cat.lives === 0) return;
-    
+
     setLoading(true);
     setError('');
 
@@ -210,7 +227,9 @@ function App() {
     const checkConnection = async () => {
       if (window.ethereum) {
         try {
-          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          const accounts = await window.ethereum.request({
+            method: 'eth_accounts',
+          });
           if (accounts && accounts.length > 0) {
             connectWallet();
           }
@@ -248,11 +267,20 @@ function App() {
                 </div>
               </div>
 
-              <div className="cat-frame">
+              {/* CAT BOX WITH PNG BACKGROUND */}
+              <div
+                className="cat-frame"
+                style={{
+                  backgroundImage: `url(${catBg})`,
+                  backgroundSize: 'cover', // or "contain" if you prefer
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              >
                 <CatIdleAnimation
                   stage={cat.stage}
                   isGhost={cat.lives === 0}
-                  size={160}
+                  size={300}
                 />
               </div>
 
@@ -286,11 +314,16 @@ function App() {
           <h1 className="app-title">9Lives</h1>
           <div className="wallet-section">
             {account ? (
-              <span className="wallet-address">
-                {account.slice(0, 6)}...{account.slice(-4)}
-              </span>
+              <div className="wallet-info">
+                <span className="wallet-address">
+                  {account.slice(0, 6)}...{account.slice(-4)}
+                </span>
+                <button className="btn-disconnect" onClick={disconnectWallet}>
+                  Disconnect
+                </button>
+              </div>
             ) : (
-              <button 
+              <button
                 className="btn-connect"
                 onClick={connectWallet}
                 disabled={loading}
@@ -302,25 +335,25 @@ function App() {
         </header>
 
         <nav className="tab-bar">
-          <button 
+          <button
             className={`tab ${activeTab === 'home' ? 'active' : ''}`}
             onClick={() => setActiveTab('home')}
           >
             Home
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'friends' ? 'active' : ''}`}
             onClick={() => setActiveTab('friends')}
           >
             Friends
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'treasure' ? 'active' : ''}`}
             onClick={() => setActiveTab('treasure')}
           >
             Treasure
           </button>
-          <button 
+          <button
             className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
             onClick={() => setActiveTab('settings')}
           >
@@ -334,17 +367,9 @@ function App() {
           {activeTab === 'treasure' && <TreasurePage />}
           {activeTab === 'settings' && <SettingsPage />}
 
-          {txStatus && (
-            <div className="status-message success">
-              {txStatus}
-            </div>
-          )}
+          {txStatus && <div className="status-message success">{txStatus}</div>}
 
-          {error && (
-            <div className="status-message error">
-              {error}
-            </div>
-          )}
+          {error && <div className="status-message error">{error}</div>}
         </main>
       </div>
     </div>

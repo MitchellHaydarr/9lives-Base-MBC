@@ -7,19 +7,21 @@ const TreasurePage: React.FC = () => {
       <div className="treasure-content">
         <div className="treasure-chest">
           <svg 
-            width="120" 
-            height="100" 
-            viewBox="0 0 120 100" 
+            width="160" 
+            height="140" 
+            viewBox="0 0 160 140" 
             fill="none"
-            style={{ margin: '2rem auto', display: 'block' }}
           >
             {/* Chest Body */}
-            <rect x="20" y="40" width="80" height="50" fill="#8b4513" stroke="#654321" strokeWidth="2"/>
+            <rect x="30" y="60" width="100" height="60" fill="#2a2a2a" stroke="#8b0000" strokeWidth="2"/>
             {/* Chest Lid */}
-            <path d="M20 40 Q60 20 100 40" fill="#a0522d" stroke="#654321" strokeWidth="2"/>
+            <path d="M30 60 Q80 35 130 60" fill="#333333" stroke="#8b0000" strokeWidth="2"/>
             {/* Lock */}
-            <circle cx="60" cy="55" r="8" fill="#ffd700" stroke="#daa520" strokeWidth="2"/>
-            <rect x="56" y="55" width="8" height="12" fill="#ffd700"/>
+            <circle cx="80" cy="80" r="10" fill="#dc2626" stroke="#8b0000" strokeWidth="2"/>
+            <rect x="75" y="80" width="10" height="15" fill="#dc2626"/>
+            {/* Decorative Lines */}
+            <line x1="30" y1="90" x2="130" y2="90" stroke="#8b0000" strokeWidth="1" opacity="0.5"/>
+            <line x1="30" y1="100" x2="130" y2="100" stroke="#8b0000" strokeWidth="1" opacity="0.5"/>
           </svg>
         </div>
         

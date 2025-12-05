@@ -1,11 +1,35 @@
 import React, { useEffect, useState, useRef } from 'react';
-import frame0 from '../assets/cats/stage0/frame0.png';
-import frame1 from '../assets/cats/stage0/frame1.png';
-import frame2 from '../assets/cats/stage0/frame2.png';
-import frame3 from '../assets/cats/stage0/frame3.png';
-import frame4 from '../assets/cats/stage0/frame4.png';
-import frame5 from '../assets/cats/stage0/frame5.png';
-import frame6 from '../assets/cats/stage0/frame6.png';
+
+import s0f0 from '../assets/cats/stage0/Frame0.png';
+import s0f1 from '../assets/cats/stage0/Frame1.png';
+import s0f2 from '../assets/cats/stage0/Frame2.png';
+import s0f3 from '../assets/cats/stage0/Frame3.png';
+
+import s1f0 from '../assets/cats/stage1/frame0.png';
+import s1f1 from '../assets/cats/stage1/frame1.png';
+import s1f2 from '../assets/cats/stage1/frame2.png';
+import s1f3 from '../assets/cats/stage1/frame3.png';
+import s1f4 from '../assets/cats/stage1/frame4.png';
+import s1f5 from '../assets/cats/stage1/frame5.png';
+import s1f6 from '../assets/cats/stage1/frame6.png';
+
+import s2f0 from '../assets/cats/stage2/pixil-frame-0.png';
+import s2f1 from '../assets/cats/stage2/pixil-frame-1.png';
+import s2f2 from '../assets/cats/stage2/pixil-frame-2.png';
+import s2f3 from '../assets/cats/stage2/pixil-frame-3.png';
+import s2f4 from '../assets/cats/stage2/pixil-frame-4.png';
+import s2f5 from '../assets/cats/stage2/pixil-frame-5.png';
+import s2f6 from '../assets/cats/stage2/pixil-frame-6.png';
+
+import s3f0 from '../assets/cats/stage3/pixil-frame-0.png';
+import s3f1 from '../assets/cats/stage3/pixil-frame-1.png';
+import s3f2 from '../assets/cats/stage3/pixil-frame-2.png';
+import s3f3 from '../assets/cats/stage3/pixil-frame-3.png';
+import s3f4 from '../assets/cats/stage3/pixil-frame-4.png';
+import s3f5 from '../assets/cats/stage3/pixil-frame-5.png';
+import s3f6 from '../assets/cats/stage3/pixil-frame-6.png';
+
+import bg1 from '../assets/backgrounds/background1.png';
 
 interface CatIdleAnimationProps {
   stage?: number;
@@ -17,65 +41,52 @@ interface CatIdleAnimationProps {
 const CatIdleAnimation: React.FC<CatIdleAnimationProps> = ({
   stage = 0,
   isGhost = false,
-  size = 128,
-  animationSpeed = 140
+  size = 96,
+  animationSpeed = 140,
 }) => {
   const [currentFrame, setCurrentFrame] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
-  // For now we only have stage0 frames
-  const frames = [frame0, frame1, frame2, frame3, frame4, frame5, frame6];
+  const stage0 = [s0f0, s0f1, s0f2, s0f3];
+  const stage1 = [s1f0, s1f1, s1f2, s1f3, s1f4, s1f5, s1f6];
+  const stage2 = [s2f0, s2f1, s2f2, s2f3, s2f4, s2f5, s2f6];
+  const stage3 = [s3f0, s3f1, s3f2, s3f3, s3f4, s3f5, s3f6];
+
+  const frames =
+    stage === 0 ? stage0 :
+    stage === 1 ? stage1 :
+    stage === 2 ? stage2 :
+    stage3;
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setCurrentFrame((prev) => (prev + 1) % frames.length);
+    if (intervalRef.current) window.clearInterval(intervalRef.current);
+
+    intervalRef.current = window.setInterval(() => {
+      setCurrentFrame(prev => (prev + 1) % frames.length);
     }, animationSpeed);
 
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
-  }, [animationSpeed, frames.length]);
+  }, [frames, animationSpeed]);
+
+  const bgStyle: React.CSSProperties = {
+    backgroundImage: `url(${bg1})`,
+  };
 
   return (
-    <div 
-      className="cat-animation-container"
-      style={{
-        width: size,
-        height: size,              // square container is fine
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}
-    >
+    <div className="cat-bg" style={bgStyle}>
       <img
         src={frames[currentFrame]}
-        alt="Cat idle animation"
+        alt="Cat"
         style={{
-          /* KEY FIXES: keep aspect ratio */
-          height: '100%',          // fill container vertically
-          width: 'auto',           // auto width so no horizontal squish
+          height: 96,       // controls cat size
+          width: 'auto',
           imageRendering: 'pixelated',
           filter: isGhost ? 'grayscale(100%) opacity(0.5)' : 'none',
-          transition: 'filter 0.3s ease'
+          transition: 'filter 0.3s ease',
         }}
       />
-      {isGhost && (
-        <div 
-          style={{
-            position: 'absolute',
-            bottom: -20,
-            fontSize: '12px',
-            color: '#666',
-            fontStyle: 'italic'
-          }}
-        >
-          Ghost Mode
-        </div>
-      )}
     </div>
   );
 };
