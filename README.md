@@ -142,38 +142,3 @@ Use MetaMask → Base Sepolia Testnet.
 	•	Lose/restore lives
 	•	View Circle USDC balance in Settings
 	•	Demo mode available for hackathon presentations
-
-⸻
-
-📺 Circle Integration UI Example
-
-In Settings → Circle Integration, the following appears:
-
-Circle Integration
-USDC Balance (Sandbox):
-0.00 USDC
-Showing Circle testnet funds for bounty integration.
-
-
-⸻
-
-🔮 Future Enhancements
-	•	Accept USDC payments using Circle APIs
-	•	On-chain USDC accounting tied to cat progression
-	•	Friends leaderboard
-	•	AI-powered emotional reflection summaries
-	•	On-chain streak NFTs
-
-⸻
-
-🌟 Summary
-
-9Lives is a polished gamified wellness app built for Base, integrated with Circle APIs to qualify for the Circle bounty.
-It blends on-chain progression, USDC-powered mechanics, animations, and a sleek UI into a cohesive experience.
-
-You now have:
-
-✔ Base contract
-✔ Circle backend
-✔ Circle UI integration
-✔ End-to-end working demo
