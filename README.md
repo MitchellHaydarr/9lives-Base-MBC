@@ -1,161 +1,179 @@
-Here is the full polished README.md in one single copy-paste box, exactly how you should submit it for the hackathon:
+🐾 9Lives — A Gamified Emotional Support Companion
+
+Built on Base · Circle API Integrated · MBC 2025 Submission
+
+9Lives is a gamified emotional-wellness companion where your on-chain cat evolves as you show up for yourself — checking in daily, maintaining streaks, and keeping your digital companion alive.
+Designed for the Base track of MBC 2025, the project blends:
+	•	🟦 Base L2 smart contracts (Ethereum L2) for cat state & progression
+	•	🔵 Circle Sandbox API for USDC balance fetching (bounty requirement)
+	•	🐈 Pixel-art animations + gamified mechanics
+	•	🔑 MetaMask / Base wallet connection
+	•	🎮 Mock mode for smooth demo experience
 
 ⸻
 
+🚀 Tracks + Bounty Integrations
 
-# 🐱 9Lives  
-A wellness-based digital companion where your cat grows as you stay consistent.
+🟦 Base Track Integration
 
-9Lives gamifies daily check-ins. If you show up each day, your cat evolves through four life stages.  
-If you miss days, your cat loses lives — and you can revive them using **1 USDC**.
+9Lives is deployed on Base Sepolia and uses a smart contract (NineLives.sol) to handle:
+	•	Cat creation
+	•	Check-ins
+	•	Streak updates
+	•	Evolution state logic
+	•	Life system
+	•	USDC-based life restoration (ERC-20 payments)
 
----
-
-## ✨ Features
-
-### 🐾 Cat Companion System
-- Create a unique cat linked to your wallet  
-- Your cat evolves as your streak grows:
-  - **Kitten → Young Cat → Adult Cat → Elder Cat**
-- Cats have 9 lives  
-- Miss too many days? Lives decrease  
-- Restore lives using **1 USDC** on Base Sepolia
-
-### 📅 Streak Tracking
-- Check in once every 24 hours  
-- Streak increases your cat’s evolution stage  
-- Streak resets if you miss a day  
-
-### 🔗 On-Chain Logic
-- Smart contract deployed on **Base Sepolia Testnet**  
-- Handles:
-  - Cat creation  
-  - Streak updates  
-  - Evolution stage calculation  
-  - Life loss  
-  - Life restoration payments  
-- Transparent & verifiable on BaseScan
-
----
-
-## 🛠 Tech Stack
-
-**Frontend:** React + Vite + TypeScript  
-**UI:** Custom styling (dark + red theme)  
-**Wallet Integration:** MetaMask  
-**Backend:** Solidity (Hardhat)  
-**Network:** Base Sepolia  
-**Contract Address:**  
+Smart contract address:
 
 0x9Fc40156f69Da680AED43F9A6FE149a2A5B20Bc8
 
----
-
-## 🚀 Getting Started
-
-### 1. Install dependencies
-```bash
-npm install
-
-2. Run the development server
-
-npm run dev
-
-Open your browser:
-👉 http://localhost:5173/
+The frontend connects through Ethers.js + MetaMask and interacts directly with the Base network.
 
 ⸻
 
-🔌 Wallet Setup (MetaMask)
-	1.	Open MetaMask
-	2.	Add Network → Base Sepolia Testnet
-	3.	Switch to that network
-	4.	Connect wallet inside the app
-	5.	(Optional) Use a faucet to get Base Sepolia ETH
+🔵 Circle API Bounty Integration
+
+We implemented the Circle Sandbox Business API in a backend microservice.
+This integration fetches a real-time USDC balance from Circle’s sandbox environment and displays it in the app under Settings → Circle Integration.
+
+✔ What we integrated for the Circle bounty:
+	•	Circle API Key stored in .env
+	•	A Node backend service (circleServer.mjs) that calls:
+
+GET https://api-sandbox.circle.com/v1/businessAccount/balances
+
+
+	•	The frontend calls our backend:
+
+GET http://localhost:8787/api/circle/balances
+
+
+	•	USDC balance is rendered in the UI inside a dedicated Circle Integration card
+
+✔ Demonstrates:
+	•	Authentication with Circle API keys
+	•	Use of Circle Business API
+	•	Real sandbox balance retrieval
+	•	Clear UI showing Circle-powered data
+
+This satisfies the Circle bounty requirement.
+
+⸻
+
+🛠️ Tech Stack
+
+Smart Contract
+	•	Solidity (Hardhat)
+	•	Base Sepolia deployment
+	•	ERC-20 USDC integration
+
+Frontend
+	•	React (Vite)
+	•	Ethers.js v6
+	•	MetaMask / Base wallet connection
+	•	Pixel art animation system
+
+Backend (Circle Integration)
+	•	Node.js
+	•	Express
+	•	Axios
+	•	Circle Sandbox Business API
 
 ⸻
 
 📦 Project Structure
 
-src/
-  components/
-    CatIdleAnimation.tsx
-    HeartsDisplay.tsx
-    Controls.tsx
-    FriendsPage.tsx
-    TreasurePage.tsx
-    SettingsPage.tsx
-  contracts/
-    nineLives.ts         # ABI + contract address
-  hooks/
-    useCat.ts
-  Examples/
-    contractIntegration.ts
-  App.tsx
-  main.tsx
-
-contracts/
-  NineLives.sol          # Smart contract source
-
-scripts/
-  deployNineLives.cjs    # Hardhat deploy script
+/src
+  /components
+  /hooks
+  /contracts
+  SettingsPage.tsx
+circleServer.mjs
+.env
+/contracts
 
 
 ⸻
 
-🧪 How 9Lives Works Internally
+▶️ How to Run the Project
 
-Cat Data Stored On-Chain
-	•	lives (0–9)
-	•	streak
-	•	stage (0–3)
-	•	lastCheckIn timestamp
-	•	exists flag
+1️⃣ Install dependencies
 
-Evolution Rules
+npm install
 
-Streak	Stage
-0–2	Kitten
-3–6	Young Cat
-7–11	Adult Cat
-12+	Elder Cat
-
-Life Restoration
-	•	Sends 1 USDC from user → treasury
-	•	Smart contract updates lives
 
 ⸻
 
-🎥 Suggested Demo Flow
-	1.	Introduce the app (“your wellness companion cat”)
-	2.	Connect wallet
-	3.	Create cat
-	4.	Demonstrate check-in + streak increment
-	5.	Show evolution change
-	6.	Lose life (debug button)
-	7.	Restore life (USDC flow)
-	8.	Show Basescan page with the deployed contract
+2️⃣ Start the Circle Backend
 
-This creates a clean, polished, easy-to-understand demo.
+npm run circle:server
 
-⸻
+Runs on:
 
-🤝 Team
+http://localhost:8787
 
-Built for MBC Hackathon 2025.
-Created by Mitchell Haydar.
+Test endpoint:
+
+http://localhost:8787/api/circle/balances
+
 
 ⸻
 
-📜 License
+3️⃣ Start the Frontend
 
-MIT
+npm run dev
 
----
+Runs on:
 
-If you want, I can also generate:
+http://localhost:5175
 
-✅ A shorter README (judges love concise)  
-✅ A more aesthetic README with dividers + ASCII logo  
-✅ A README with embedded GIFs or screenshots  
-Just say the word.
+⸻
+
+4️⃣ Connect Wallet
+
+Use MetaMask → Base Sepolia Testnet.
+
+⸻
+
+5️⃣ Use the App
+	•	Create your cat
+	•	Check in daily
+	•	Lose/restore lives
+	•	View Circle USDC balance in Settings
+	•	Demo mode available for hackathon presentations
+
+⸻
+
+📺 Circle Integration UI Example
+
+In Settings → Circle Integration, the following appears:
+
+Circle Integration
+USDC Balance (Sandbox):
+0.00 USDC
+Showing Circle testnet funds for bounty integration.
+
+
+⸻
+
+🔮 Future Enhancements
+	•	Accept USDC payments using Circle APIs
+	•	On-chain USDC accounting tied to cat progression
+	•	Friends leaderboard
+	•	AI-powered emotional reflection summaries
+	•	On-chain streak NFTs
+
+⸻
+
+🌟 Summary
+
+9Lives is a polished gamified wellness app built for Base, integrated with Circle APIs to qualify for the Circle bounty.
+It blends on-chain progression, USDC-powered mechanics, animations, and a sleek UI into a cohesive experience.
+
+You now have:
+
+✔ Base contract
+✔ Circle backend
+✔ Circle UI integration
+✔ End-to-end working demo
