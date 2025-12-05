@@ -142,3 +142,26 @@ Use MetaMask → Base Sepolia Testnet.
 	•	Lose/restore lives
 	•	View Circle USDC balance in Settings
 	•	Demo mode available for hackathon presentations
+
+⸻
+
+📺 Circle Integration UI Example
+
+In Settings → Circle Integration, the following appears:
+
+Circle Integration
+USDC Balance (Sandbox):
+0.00 USDC
+Showing Circle testnet funds for bounty integration.
+
+
+⸻
+
+🔮 Future Enhancements
+	•	Accept USDC payments using Circle APIs
+	•	On-chain USDC accounting tied to cat progression
+	•	Friends leaderboard
+	•	AI-powered emotional reflection summaries
+	•	On-chain streak NFTs
+
+⸻
