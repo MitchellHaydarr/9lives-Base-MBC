@@ -62,7 +62,7 @@ const Controls: React.FC<ControlsProps> = ({
             onClick={onRestoreLife}
             disabled={loading}
           >
-            Restore Life
+            Restore Life - 1USDC
           </button>
         )}
       </div>

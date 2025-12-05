@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
+import * as contractFunctions from '../Examples/contractIntegration';
 
 interface Cat {
   lives: number;
@@ -18,40 +19,10 @@ interface UseCatReturn {
   refreshCat: () => Promise<void>;
 }
 
-// Temporary mock contract functions for development
-// These will be replaced with real contract calls when deployed
-const mockContract = {
-  hasCat: async (address: string): Promise<boolean> => {
-    // Check localStorage for mock data
-    const mockData = localStorage.getItem(`cat_${address}`);
-    return mockData !== null;
-  },
-  getCat: async (address: string): Promise<Cat> => {
-    const mockData = localStorage.getItem(`cat_${address}`);
-    if (mockData) {
-      return JSON.parse(mockData);
-    }
-    throw new Error('Cat does not exist');
-  },
-  timeUntilNextCheckIn: async (address: string): Promise<bigint> => {
-    const mockData = localStorage.getItem(`cat_${address}`);
-    if (mockData) {
-      const cat = JSON.parse(mockData);
-      const lastCheckIn = BigInt(cat.lastCheckIn);
-      const now = BigInt(Math.floor(Date.now() / 1000));
-      const dayInSeconds = BigInt(86400);
-      const timeSince = now - lastCheckIn;
-      
-      if (timeSince >= dayInSeconds) {
-        return BigInt(0);
-      }
-      return dayInSeconds - timeSince;
-    }
-    return BigInt(0);
-  }
-};
-
-export const useCat = (address: string | undefined, contract?: ethers.Contract): UseCatReturn => {
+export const useCat = (
+  address: string | undefined,
+  signer: ethers.Signer | null
+): UseCatReturn => {
   const [cat, setCat] = useState<Cat | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,9 +30,10 @@ export const useCat = (address: string | undefined, contract?: ethers.Contract):
   const [hasCat, setHasCat] = useState(false);
 
   const refreshCat = useCallback(async () => {
-    if (!address) {
+    if (!address || !signer) {
       setCat(null);
       setHasCat(false);
+      setCanCheckIn(false);
       return;
     }
 
@@ -69,31 +41,39 @@ export const useCat = (address: string | undefined, contract?: ethers.Contract):
     setError(null);
 
     try {
-      // Use real contract if available, otherwise use mock
-      const contractToUse = contract || mockContract;
-
-      // Check if cat exists
-      const exists = await contractToUse.hasCat(address);
+      // ✅ these must exist in contractIntegration
+      const exists = await contractFunctions.hasCat(signer);
       setHasCat(exists);
 
       if (exists) {
-        // Get cat data
-        const catData = await contractToUse.getCat(address);
-        
-        // Convert BigInt to number for display
+        const catData = await contractFunctions.getCat(signer);
+
         const formattedCat: Cat = {
-          lives: typeof catData.lives === 'bigint' ? Number(catData.lives) : catData.lives,
-          streak: typeof catData.streak === 'bigint' ? Number(catData.streak) : catData.streak,
-          stage: typeof catData.stage === 'bigint' ? Number(catData.stage) : catData.stage,
-          lastCheckIn: typeof catData.lastCheckIn === 'bigint' ? catData.lastCheckIn : BigInt(catData.lastCheckIn),
-          exists: catData.exists
+          lives:
+            typeof catData.lives === 'bigint'
+              ? Number(catData.lives)
+              : catData.lives,
+          streak:
+            typeof catData.streak === 'bigint'
+              ? Number(catData.streak)
+              : catData.streak,
+          stage:
+            typeof catData.stage === 'bigint'
+              ? Number(catData.stage)
+              : catData.stage,
+          lastCheckIn:
+            typeof catData.lastCheckIn === 'bigint'
+              ? catData.lastCheckIn
+              : BigInt(catData.lastCheckIn),
+          exists: catData.exists,
         };
 
         setCat(formattedCat);
 
-        // Check if can check in
-        const timeUntilNext = await contractToUse.timeUntilNextCheckIn(address);
-        setCanCheckIn(timeUntilNext === BigInt(0));
+        const timeUntilNext = await contractFunctions.timeUntilNextCheckIn(
+          signer
+        );
+        setCanCheckIn(timeUntilNext === 0n);
       } else {
         setCat(null);
         setCanCheckIn(false);
@@ -103,17 +83,15 @@ export const useCat = (address: string | undefined, contract?: ethers.Contract):
       setError(err.message || 'Failed to load cat data');
       setCat(null);
       setHasCat(false);
+      setCanCheckIn(false);
     } finally {
       setLoading(false);
     }
-  }, [address, contract]);
+  }, [address, signer]);
 
   useEffect(() => {
     refreshCat();
-
-    // Set up polling for updates every 30 seconds
     const interval = setInterval(refreshCat, 30000);
-
     return () => clearInterval(interval);
   }, [refreshCat]);
 
@@ -123,6 +101,6 @@ export const useCat = (address: string | undefined, contract?: ethers.Contract):
     error,
     canCheckIn,
     hasCat,
-    refreshCat
+    refreshCat,
   };
 };
