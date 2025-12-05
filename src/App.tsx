@@ -9,10 +9,6 @@ import TreasurePage from './components/TreasurePage';
 import SettingsPage from './components/SettingsPage';
 import { useCat } from './hooks/useCat';
 
-// background image for the cat frame (adjust path if needed)
-import catBg from './assets/backgrounds/background1.png';
-
-// Import contract integration functions when available
 let contractFunctions: any = null;
 try {
   contractFunctions = require('./examples/contractIntegration');
@@ -31,60 +27,36 @@ function App() {
   const [txStatus, setTxStatus] = useState<string>('');
   const [activeTab, setActiveTab] = useState<TabKey>('home');
 
-  // Use the custom hook to manage cat state
   const { cat, hasCat, refreshCat } = useCat(account, contract || undefined);
 
-  // Connect wallet function
   const connectWallet = useCallback(async () => {
     setLoading(true);
     setError('');
 
     try {
-      if (typeof window.ethereum === 'undefined') {
-        throw new Error('MetaMask is not installed!');
-      }
+      if (!window.ethereum) throw new Error('MetaMask not installed');
 
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts',
-      });
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
 
-      // Create provider and signer
-      const newProvider = new ethers.BrowserProvider(window.ethereum);
-      const newSigner = await newProvider.getSigner();
-
-      setSigner(newSigner);
+      setSigner(signer);
       setAccount(accounts[0]);
-
-      // Try to load contract if ABI is available
-      try {
-        if (contractFunctions) {
-          console.log('Contract functions available');
-        }
-      } catch (err) {
-        console.log('Contract not yet deployed, running in demo mode');
-      }
     } catch (err: any) {
-      console.error('Failed to connect wallet:', err);
-      setError(err.message || 'Failed to connect wallet');
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Disconnect wallet function
   const disconnectWallet = useCallback(() => {
+    localStorage.removeItem(`cat_${account}`);
     setAccount('');
     setSigner(null);
     setError('');
     setTxStatus('');
-    // Clear any cached cat data for the disconnected account
-    if (account) {
-      localStorage.removeItem(`cat_${account}`);
-    }
   }, [account]);
 
-  // Create cat function
   const handleCreateCat = async () => {
     if (!account) return;
 
@@ -96,30 +68,30 @@ function App() {
       if (contractFunctions && signer) {
         await contractFunctions.createCat();
       } else {
-        // Mock mode for development
         const mockCat = {
           lives: 9,
           streak: 0,
           stage: 0,
           lastCheckIn: Math.floor(Date.now() / 1000).toString(),
-          exists: true,
+          exists: true
         };
         localStorage.setItem(`cat_${account}`, JSON.stringify(mockCat));
       }
 
-      setTxStatus('Cat created successfully!');
+      setTxStatus('Cat created!');
       await refreshCat();
     } catch (err: any) {
-      console.error('Failed to create cat:', err);
-      setError(err.message || 'Failed to create cat');
+      setError(err.message);
     } finally {
       setLoading(false);
-      setTimeout(() => setTxStatus(''), 3000);
+      setTimeout(() => setTxStatus(''), 2000);
     }
   };
 
-  // Check in function
-  const handleCheckIn = async () => {
+  // UPDATED: CHECK-IN FUNCTION NOW ACCEPTS A NOTE
+  const handleCheckIn = async (note?: string) => {
+    console.log("User check-in note:", note);
+
     if (!account || !hasCat) return;
 
     setLoading(true);
@@ -128,117 +100,87 @@ function App() {
 
     try {
       if (contractFunctions && signer) {
-        const result = await contractFunctions.checkIn();
-        setTxStatus(
-          `Checked in! Streak: ${result.streak}, Stage: ${result.stage}`,
-        );
+        await contractFunctions.checkIn();
       } else {
-        // Mock mode for development
-        const mockData = localStorage.getItem(`cat_${account}`);
-        if (mockData) {
-          const cat = JSON.parse(mockData);
-          cat.streak += 1;
-          cat.lastCheckIn = Math.floor(Date.now() / 1000).toString();
+        const stored = localStorage.getItem(`cat_${account}`);
+        if (stored) {
+          const data = JSON.parse(stored);
+          data.streak += 1;
+          data.lastCheckIn = Math.floor(Date.now() / 1000).toString();
 
-          // Update stage based on streak
-          if (cat.streak >= 12) cat.stage = 3;
-          else if (cat.streak >= 7) cat.stage = 2;
-          else if (cat.streak >= 3) cat.stage = 1;
-          else cat.stage = 0;
+          if (data.streak >= 12) data.stage = 3;
+          else if (data.streak >= 7) data.stage = 2;
+          else if (data.streak >= 3) data.stage = 1;
+          else data.stage = 0;
 
-          localStorage.setItem(`cat_${account}`, JSON.stringify(cat));
-          setTxStatus(`Checked in! Streak: ${cat.streak}`);
+          localStorage.setItem(`cat_${account}`, JSON.stringify(data));
         }
       }
 
       await refreshCat();
+      setTxStatus('Checked in!');
     } catch (err: any) {
-      console.error('Failed to check in:', err);
-      setError(err.message || 'Failed to check in');
+      setError(err.message);
     } finally {
       setLoading(false);
-      setTimeout(() => setTxStatus(''), 3000);
+      setTimeout(() => setTxStatus(''), 2000);
     }
   };
 
-  // Restore life function
   const handleRestoreLife = async () => {
     if (!account || !hasCat || !cat) return;
 
     setLoading(true);
-    setTxStatus('Restoring life with USDC...');
+    setTxStatus('Restoring life...');
     setError('');
 
     try {
       if (contractFunctions && signer) {
         await contractFunctions.restoreLife();
       } else {
-        // Mock mode for development
-        const mockData = localStorage.getItem(`cat_${account}`);
-        if (mockData) {
-          const catData = JSON.parse(mockData);
-          if (catData.lives < 9) {
-            catData.lives += 1;
-            localStorage.setItem(`cat_${account}`, JSON.stringify(catData));
-          }
+        const stored = localStorage.getItem(`cat_${account}`);
+        if (stored) {
+          const data = JSON.parse(stored);
+          if (data.lives < 9) data.lives += 1;
+          localStorage.setItem(`cat_${account}`, JSON.stringify(data));
         }
       }
 
-      setTxStatus('Life restored!');
       await refreshCat();
+      setTxStatus('Life restored!');
     } catch (err: any) {
-      console.error('Failed to restore life:', err);
-      setError(err.message || 'Failed to restore life');
+      setError(err.message);
     } finally {
       setLoading(false);
-      setTimeout(() => setTxStatus(''), 3000);
+      setTimeout(() => setTxStatus(''), 2000);
     }
   };
 
-  // Lose life function for testing
   const handleLoseLife = async () => {
-    if (!account || !hasCat || !cat || cat.lives === 0) return;
+    if (!account || !hasCat || !cat) return;
 
     setLoading(true);
-    setError('');
 
     try {
-      const mockData = localStorage.getItem(`cat_${account}`);
-      if (mockData) {
-        const catData = JSON.parse(mockData);
-        if (catData.lives > 0) {
-          catData.lives -= 1;
-          localStorage.setItem(`cat_${account}`, JSON.stringify(catData));
-          setTxStatus('Lost a life (debug)');
-        }
+      const stored = localStorage.getItem(`cat_${account}`);
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data.lives > 0) data.lives -= 1;
+        localStorage.setItem(`cat_${account}`, JSON.stringify(data));
       }
       await refreshCat();
-    } catch (err: any) {
-      console.error('Failed to lose life:', err);
-      setError(err.message || 'Failed to lose life');
     } finally {
       setLoading(false);
-      setTimeout(() => setTxStatus(''), 3000);
     }
   };
 
-  // Auto-connect on load if previously connected
   useEffect(() => {
-    const checkConnection = async () => {
+    (async () => {
       if (window.ethereum) {
-        try {
-          const accounts = await window.ethereum.request({
-            method: 'eth_accounts',
-          });
-          if (accounts && accounts.length > 0) {
-            connectWallet();
-          }
-        } catch (err) {
-          console.log('Auto-connect check failed:', err);
-        }
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) connectWallet();
       }
-    };
-    checkConnection();
+    })();
   }, [connectWallet]);
 
   const renderHomePage = () => (
@@ -259,28 +201,19 @@ function App() {
                 <div className="stat">
                   <span className="stat-label">Stage</span>
                   <span className="stat-value">
-                    {cat.stage === 0 && 'Kitten'}
-                    {cat.stage === 1 && 'Young Cat'}
-                    {cat.stage === 2 && 'Adult Cat'}
-                    {cat.stage === 3 && 'Elder Cat'}
+                    {cat.stage === 0 && "Kitten"}
+                    {cat.stage === 1 && "Young Cat"}
+                    {cat.stage === 2 && "Adult Cat"}
+                    {cat.stage === 3 && "Elder Cat"}
                   </span>
                 </div>
               </div>
 
-              {/* CAT BOX WITH PNG BACKGROUND */}
-              <div
-                className="cat-frame"
-                style={{
-                  backgroundImage: `url(${catBg})`,
-                  backgroundSize: 'cover', // or "contain" if you prefer
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                }}
-              >
+              <div className="cat-frame">
                 <CatIdleAnimation
                   stage={cat.stage}
                   isGhost={cat.lives === 0}
-                  size={300}
+                  size={160}
                 />
               </div>
 
@@ -288,8 +221,7 @@ function App() {
             </>
           ) : (
             <div className="no-cat">
-              <p className="no-cat-message">You don't have a cat yet!</p>
-              <p className="no-cat-hint">Create one to start your journey</p>
+              <p>You don't have a cat yet!</p>
             </div>
           )}
 
@@ -323,40 +255,24 @@ function App() {
                 </button>
               </div>
             ) : (
-              <button
-                className="btn-connect"
-                onClick={connectWallet}
-                disabled={loading}
-              >
-                {loading ? 'Connecting...' : 'Connect Wallet'}
+              <button className="btn-connect" onClick={connectWallet}>
+                Connect Wallet
               </button>
             )}
           </div>
         </header>
 
         <nav className="tab-bar">
-          <button
-            className={`tab ${activeTab === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveTab('home')}
-          >
+          <button className={`tab ${activeTab === 'home' ? 'active' : ''}`} onClick={() => setActiveTab('home')}>
             Home
           </button>
-          <button
-            className={`tab ${activeTab === 'friends' ? 'active' : ''}`}
-            onClick={() => setActiveTab('friends')}
-          >
+          <button className={`tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => setActiveTab('friends')}>
             Friends
           </button>
-          <button
-            className={`tab ${activeTab === 'treasure' ? 'active' : ''}`}
-            onClick={() => setActiveTab('treasure')}
-          >
+          <button className={`tab ${activeTab === 'treasure' ? 'active' : ''}`} onClick={() => setActiveTab('treasure')}>
             Treasure
           </button>
-          <button
-            className={`tab ${activeTab === 'settings' ? 'active' : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
+          <button className={`tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
             Settings
           </button>
         </nav>
@@ -368,7 +284,6 @@ function App() {
           {activeTab === 'settings' && <SettingsPage />}
 
           {txStatus && <div className="status-message success">{txStatus}</div>}
-
           {error && <div className="status-message error">{error}</div>}
         </main>
       </div>

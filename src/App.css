@@ -674,4 +674,54 @@
   .treasure-page {
     max-width: 100%;
   }
+
+  .checkin-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.checkin-input {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #eee;
+  font-size: 14px;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.checkin-input:focus {
+  border-color: #8b0000;
+  background: #0c0c0c;
+}
+
+.checkin-input {
+  margin-top: 0.75rem;
+  width: 100%;
+  max-width: 360px;
+  align-self: center;
+  padding: 0.6rem 0.75rem;
+  background: #0f0f0f;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #eee;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.checkin-input::placeholder {
+  color: #555;
+}
+
+.checkin-input:focus {
+  border-color: #8b0000;
+  background: #050505;
+}
+
 }
